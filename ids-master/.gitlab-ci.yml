@@ -1,0 +1,14 @@
+variables:
+  VUE_APP_VERSION_ID: '1.0.1-$CI_COMMIT_SHORT_SHA'
+
+stages:
+  - build
+
+build and publish installer:
+  image: electronuserland/builder:wine
+  stage: build
+  only:
+    - master
+  script:
+    - sed -i "s/0\.0\.0/${VUE_APP_VERSION_ID}/g" package.json
+    - npm install && npm run publish

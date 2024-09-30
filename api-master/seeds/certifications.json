@@ -1,0 +1,49 @@
+[
+{
+  "name": "KPHX GND",
+  "code": "kphxground",
+  "order": 4,
+  "class": "tier-one"
+},
+{
+  "name": "KPHX TWR",
+  "code": "kphxtower",
+  "order": 3,
+  "class": "tier-one"
+},
+{
+  "name": "P50",
+  "code": "p50",
+  "order": 2,
+  "class": "tier-one"
+},
+{
+  "name": "Enroute",
+  "code": "enroute",
+  "order": 1,
+  "class": "tier-one"
+},
+{
+  "name": "KABQ",
+  "code": "kabq",
+  "order": 1,
+  "class": "tier-two"
+},
+{
+  "name": "KFLG",
+  "code": "kflg",
+  "order": 2,
+  "class": "tier-two"
+},
+{
+  "name": "KLUF",
+  "code": "kluf",
+  "order": 3,
+  "class": "tier-two"
+},
+{
+  "name": "KSAF",
+  "code": "ksaf",
+  "order": 4,
+  "class": "tier-two"
+}]

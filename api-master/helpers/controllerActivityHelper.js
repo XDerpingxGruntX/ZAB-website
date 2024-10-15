@@ -20,6 +20,14 @@ const gracePeriodInDays = 15;
 const requiredHoursPerPeriod = 3; // Ensure this is set to 3 hours
 const redisActivityCheckKey = "ACTIVITYCHECKRUNNING";
 
+// Helper function to get the start and end dates of the current quarter
+function getCurrentQuarterDates() {
+    const now = luxon.utc();
+    const startOfQuarter = now.startOf('quarter');
+    const endOfQuarter = now.endOf('quarter');
+    return { startOfQuarter, endOfQuarter };
+}
+
 /**
  * Registers a CRON job that sends controllers reminder emails.
  */
@@ -95,7 +103,7 @@ async function checkControllerActivity() {
         });
     }
     catch (e) {
-        console.error(e)
+        console.error(e);
     }
 }
 
@@ -104,21 +112,20 @@ async function checkControllerActivity() {
  * Checks for controllers that did not maintain activity and sends a removal email.
  */
 async function checkControllersNeedingRemoval() {
-    const today = luxon.utc();
+    const { startOfQuarter, endOfQuarter } = getCurrentQuarterDates();
 
     try {
         const usersNeedingRemovalWarningCheck = await User.find(
             {
                 member: true,
-                removalWarningDeliveryDate: { $lte: today }
+                removalWarningDeliveryDate: { $lte: endOfQuarter }
             });
 
         usersNeedingRemovalWarningCheck.forEach(async user => {
-            const minActivityDate = luxon.fromJSDate(user.removalWarningDeliveryDate).minus({ days: activityWindowInDays - 1 });
             const userHourSums = await ControllerHours.aggregate([
                 {
                     $match: {
-                        timeStart: { $gt: minActivityDate },
+                        timeStart: { $gt: startOfQuarter },
                         cid: user.cid
                     }
                 },
@@ -140,16 +147,16 @@ async function checkControllersNeedingRemoval() {
                 }
             ]);
             const userTotalHoursInPeriod = (userHourSums && userHourSums.length > 0) ? userHourSums[0].total : 0;
-            const userTrainingRequestCount = await TrainingRequest.count({ studentCid: user.cid, startTime: { $gt: minActivityDate } });
+            const userTrainingRequestCount = await TrainingRequest.count({ studentCid: user.cid, startTime: { $gt: startOfQuarter } });
 
             await User.updateOne(
                 { "cid": user.cid },
                 {
                     removalWarningDeliveryDate: null
                 }
-            )
+            );
 
-            if (controllerIsInactive(user, userTotalHoursInPeriod, userTrainingRequestCount, minActivityDate)) {
+            if (controllerIsInactive(user, userTotalHoursInPeriod, userTrainingRequestCount, startOfQuarter)) {
                 transporter.sendMail({
                     to: user.email,
                     cc: 'datm@zabartcc.org',
